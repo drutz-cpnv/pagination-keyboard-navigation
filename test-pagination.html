@@ -280,6 +280,12 @@
       { url: 'https://example.com/articles/p1', expectedPage: 1, expectedPattern: 'path-p-no-separator' },
       { url: 'https://example.com/articles/p99', expectedPage: 99, expectedPattern: 'path-p-no-separator' },
       
+      // Pagination au milieu du slug
+      { url: 'https://example.com/articles/23453245-p3-hello-world', expectedPage: 3, expectedPattern: 'path-slug-p-middle' },
+      { url: 'https://example.com/articles/article-p2-title', expectedPage: 2, expectedPattern: 'path-slug-p-middle' },
+      { url: 'https://example.com/articles/post-p5', expectedPage: 5, expectedPattern: 'path-slug-p-middle' },
+      { url: 'https://example.com/articles/123-p1-article-title', expectedPage: 1, expectedPattern: 'path-slug-p-middle' },
+      
       // Path avec numéro à la fin
       { url: 'https://example.com/articles/2', expectedPage: 2, expectedPattern: 'path-trailing-number' },
       { url: 'https://example.com/articles/5', expectedPage: 5, expectedPattern: 'path-trailing-number' },

@@ -191,6 +191,36 @@ const PAGINATION_PATTERNS = [
     }
   },
   
+  // Pagination au milieu du slug: /23453245-p3-hello-world ou /article-p2-title
+  {
+    name: 'path-slug-p-middle',
+    detect: (url) => {
+      // Matche -p suivi d'un nombre au milieu ou à la fin d'un slug
+      // Exemples: /23453245-p3-hello-world, /article-p2-title, /post-p5
+      // Mais pas /p-3 qui est déjà géré par path-p-dash
+      return /-p\d+/.test(url.pathname) && !/^\/p-\d+/.test(url.pathname);
+    },
+    getPage: (url) => {
+      const match = url.pathname.match(/-p(\d+)/);
+      return match ? parseInt(match[1], 10) : null;
+    },
+    buildUrl: (url, page) => {
+      const newUrl = new URL(url);
+      if (page === 1) {
+        // Supprimer -p3 du slug
+        newUrl.pathname = newUrl.pathname.replace(/-p\d+/, '');
+      } else {
+        // Remplacer -p3 par -p{page}
+        newUrl.pathname = newUrl.pathname.replace(/-p\d+/, `-p${page}`);
+      }
+      // Nettoyer les doubles tirets qui pourraient apparaître
+      newUrl.pathname = newUrl.pathname.replace(/--+/g, '-');
+      // Nettoyer les tirets en début/fin de segments
+      newUrl.pathname = newUrl.pathname.replace(/\/-/g, '/').replace(/-\//g, '/');
+      return newUrl.toString();
+    }
+  },
+  
   // Patterns avec numéro de page à la fin du path
   {
     name: 'path-trailing-number',
