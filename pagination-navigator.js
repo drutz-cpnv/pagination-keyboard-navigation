@@ -30,7 +30,36 @@ class PaginationNavigator {
         pattern: this.paginationInfo.pattern,
         currentPage: this.paginationInfo.currentPage
       });
+      
+      // Notifier le background script pour mettre à jour l'icône
+      this.notifyPaginationStatus(true, this.paginationInfo.currentPage);
+    } else {
+      // Pas de pagination détectée
+      this.notifyPaginationStatus(false);
     }
+  }
+
+  notifyPaginationStatus(hasPagination, currentPage = null) {
+    // Envoyer un message au background script avec un petit délai
+    // pour s'assurer que la page est complètement chargée
+    setTimeout(() => {
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        chrome.runtime.sendMessage({
+          action: 'updatePaginationStatus',
+          hasPagination: hasPagination,
+          currentPage: currentPage,
+          url: window.location.href
+        }).then(() => {
+          console.log('Page Extension: Statut de pagination envoyé au background', {
+            hasPagination,
+            currentPage
+          });
+        }).catch(err => {
+          // Ignorer les erreurs si le background n'est pas encore prêt
+          console.debug('Page Extension: Impossible de notifier le background', err);
+        });
+      }
+    }, 100); // Petit délai pour s'assurer que tout est prêt
   }
 
   handleKeyDown(event) {
@@ -172,7 +201,9 @@ class PaginationNavigator {
       originalPushState.apply(history, args);
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href;
-        setTimeout(() => this.updatePaginationInfo(), 100);
+        setTimeout(() => {
+          this.updatePaginationInfo();
+        }, 100);
       }
     }.bind(this);
 
@@ -180,13 +211,17 @@ class PaginationNavigator {
       originalReplaceState.apply(history, args);
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href;
-        setTimeout(() => this.updatePaginationInfo(), 100);
+        setTimeout(() => {
+          this.updatePaginationInfo();
+        }, 100);
       }
     }.bind(this);
 
     // Écouter les événements popstate
     window.addEventListener('popstate', () => {
-      setTimeout(() => this.updatePaginationInfo(), 100);
+      setTimeout(() => {
+        this.updatePaginationInfo();
+      }, 100);
     });
   }
 
@@ -203,13 +238,30 @@ class PaginationNavigator {
 let paginationNavigator = null;
 
 if (typeof window !== 'undefined') {
+  // Fonction d'initialisation
+  function initPaginationNavigator() {
+    if (!paginationNavigator) {
+      paginationNavigator = new PaginationNavigator();
+    }
+  }
+  
   // Attendre que le DOM soit prêt
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      paginationNavigator = new PaginationNavigator();
-    });
+    document.addEventListener('DOMContentLoaded', initPaginationNavigator);
   } else {
-    paginationNavigator = new PaginationNavigator();
+    // DOM déjà prêt, initialiser après un petit délai pour s'assurer que tout est chargé
+    setTimeout(initPaginationNavigator, 50);
   }
+  
+  // Réinitialiser si l'URL change (pour les SPA)
+  let lastUrl = window.location.href;
+  setInterval(() => {
+    if (window.location.href !== lastUrl) {
+      lastUrl = window.location.href;
+      if (paginationNavigator) {
+        paginationNavigator.updatePaginationInfo();
+      }
+    }
+  }, 500);
 }
 
