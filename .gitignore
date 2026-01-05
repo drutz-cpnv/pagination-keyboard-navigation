@@ -1,0 +1,27 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build
+dist/
+build/
+*.zip
+*.crx
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (si vous utilisez npm/yarn)
+node_modules/
+package-lock.json
+yarn.lock
+

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tests de Détection de Pagination</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+    }
+
+    .test-section h2 {
+      color: #4285f4;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .test-case {
+      background: #f9f9f9;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #4285f4;
+    }
+
+    .test-case.passed {
+      border-left-color: #34a853;
+      background: #e8f5e9;
+    }
+
+    .test-case.failed {
+      border-left-color: #ea4335;
+      background: #ffebee;
+    }
+
+    .test-url {
+      font-family: 'Courier New', monospace;
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      margin: 8px 0;
+      word-break: break-all;
+      font-size: 13px;
+    }
+
+    .test-result {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .test-result.success {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+
+    .test-result.error {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+
+    .test-info {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .controls {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #e3f2fd;
+      border-radius: 6px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      background: #4285f4;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .controls button:hover {
+      background: #357ae8;
+    }
+
+    .controls button.secondary {
+      background: #666;
+    }
+
+    .controls button.secondary:hover {
+      background: #555;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+
+    .stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #4285f4;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .add-test-form {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff3e0;
+      border-radius: 6px;
+    }
+
+    .add-test-form h3 {
+      margin-bottom: 15px;
+      color: #f57c00;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #4285f4;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Tests de Détection de Pagination</h1>
+    <p class="subtitle">Vérifiez que la détection de pagination fonctionne correctement pour différents formats d'URL</p>
+
+    <div class="controls">
+      <button onclick="runAllTests()">▶️ Exécuter tous les tests</button>
+      <button onclick="clearResults()" class="secondary">🗑️ Effacer les résultats</button>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat">
+        <div class="stat-value" id="total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="passed">0</div>
+        <div class="stat-label">Réussis</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="failed">0</div>
+        <div class="stat-label">Échoués</div>
+      </div>
+    </div>
+
+    <div id="test-results"></div>
+
+    <div class="add-test-form">
+      <h3>➕ Ajouter un nouveau test</h3>
+      <div class="form-group">
+        <label for="test-url">URL à tester:</label>
+        <input type="text" id="test-url" placeholder="https://example.com/page?p=2">
+      </div>
+      <div class="form-group">
+        <label for="expected-page">Page attendue:</label>
+        <input type="number" id="expected-page" placeholder="2" min="1">
+      </div>
+      <div class="form-group">
+        <label for="expected-pattern">Pattern attendu (optionnel):</label>
+        <input type="text" id="expected-pattern" placeholder="query-p">
+      </div>
+      <div class="form-actions">
+        <button onclick="addCustomTest()">Ajouter le test</button>
+        <button onclick="testCustomUrl()" class="secondary">Tester cette URL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charger le module de détection -->
+  <script src="pagination-detector.js"></script>
+  <script>
+    // Tests prédéfinis
+    const predefinedTests = [
+      // Query parameters
+      { url: 'https://example.com/articles?p=2', expectedPage: 2, expectedPattern: 'query-p' },
+      { url: 'https://example.com/articles?p=1', expectedPage: 1, expectedPattern: 'query-p' },
+      { url: 'https://example.com/articles?p=10', expectedPage: 10, expectedPattern: 'query-p' },
+      { url: 'https://example.com/articles?page=3', expectedPage: 3, expectedPattern: 'query-page' },
+      { url: 'https://example.com/articles?page=1', expectedPage: 1, expectedPattern: 'query-page' },
+      { url: 'https://example.com/articles?pageNum=5', expectedPage: 5, expectedPattern: 'query-pageNum' },
+      { url: 'https://example.com/articles?pagenum=7', expectedPage: 7, expectedPattern: 'query-pagenum' },
+      
+      // Path avec slash
+      { url: 'https://example.com/articles/page/2', expectedPage: 2, expectedPattern: 'path-page-slash' },
+      { url: 'https://example.com/articles/page/1', expectedPage: 1, expectedPattern: 'path-page-slash' },
+      { url: 'https://example.com/articles/p/3', expectedPage: 3, expectedPattern: 'path-p-slash' },
+      { url: 'https://example.com/articles/p/15', expectedPage: 15, expectedPattern: 'path-p-slash' },
+      
+      // Path avec tiret
+      { url: 'https://example.com/articles/page-2', expectedPage: 2, expectedPattern: 'path-page-dash' },
+      { url: 'https://example.com/articles/page-1', expectedPage: 1, expectedPattern: 'path-page-dash' },
+      { url: 'https://example.com/articles/p-4', expectedPage: 4, expectedPattern: 'path-p-dash' },
+      
+      // Path sans séparateur
+      { url: 'https://example.com/articles/page4', expectedPage: 4, expectedPattern: 'path-page-no-separator' },
+      { url: 'https://example.com/articles/page1', expectedPage: 1, expectedPattern: 'path-page-no-separator' },
+      { url: 'https://example.com/articles/page123', expectedPage: 123, expectedPattern: 'path-page-no-separator' },
+      { url: 'https://example.com/articles/p2', expectedPage: 2, expectedPattern: 'path-p-no-separator' },
+      { url: 'https://example.com/articles/p1', expectedPage: 1, expectedPattern: 'path-p-no-separator' },
+      { url: 'https://example.com/articles/p99', expectedPage: 99, expectedPattern: 'path-p-no-separator' },
+      
+      // Path avec numéro à la fin
+      { url: 'https://example.com/articles/2', expectedPage: 2, expectedPattern: 'path-trailing-number' },
+      { url: 'https://example.com/articles/5', expectedPage: 5, expectedPattern: 'path-trailing-number' },
+      
+      // URLs sans pagination (devrait retourner page 1)
+      { url: 'https://example.com/articles', expectedPage: 1, expectedPattern: 'none' },
+      { url: 'https://example.com/articles/', expectedPage: 1, expectedPattern: 'none' },
+      
+      // URLs complexes avec autres paramètres
+      { url: 'https://example.com/articles?category=tech&p=3&sort=date', expectedPage: 3, expectedPattern: 'query-p' },
+      { url: 'https://example.com/articles?page=2&filter=active', expectedPage: 2, expectedPattern: 'query-page' },
+      { url: 'https://example.com/blog/page/4?tag=javascript', expectedPage: 4, expectedPattern: 'path-page-slash' },
+    ];
+
+    let customTests = [];
+    let testResults = [];
+
+    function runTest(test) {
+      try {
+        const result = detectPagination(test.url);
+        
+        const passed = result && 
+          result.currentPage === test.expectedPage && 
+          (test.expectedPattern === undefined || result.pattern === test.expectedPattern);
+
+        // Tester la construction d'URL
+        let buildUrlWorks = false;
+        let nextPageUrl = null;
+        let prevPageUrl = null;
+        
+        if (result && result.buildUrl) {
+          try {
+            nextPageUrl = result.buildUrl(result.currentPage + 1);
+            if (result.currentPage > 1) {
+              prevPageUrl = result.buildUrl(result.currentPage - 1);
+            }
+            buildUrlWorks = true;
+          } catch (e) {
+            console.error('Erreur lors de la construction d\'URL:', e);
+          }
+        }
+
+        return {
+          ...test,
+          result,
+          passed,
+          buildUrlWorks,
+          nextPageUrl,
+          prevPageUrl
+        };
+      } catch (e) {
+        return {
+          ...test,
+          error: e.message,
+          passed: false
+        };
+      }
+    }
+
+    function runAllTests() {
+      const allTests = [...predefinedTests, ...customTests];
+      testResults = allTests.map(runTest);
+      displayResults();
+      updateStats();
+    }
+
+    function displayResults() {
+      const container = document.getElementById('test-results');
+      container.innerHTML = '';
+
+      // Grouper par pattern
+      const grouped = {};
+      testResults.forEach(test => {
+        const pattern = test.expectedPattern || 'none';
+        if (!grouped[pattern]) {
+          grouped[pattern] = [];
+        }
+        grouped[pattern].push(test);
+      });
+
+      Object.keys(grouped).forEach(pattern => {
+        const section = document.createElement('div');
+        section.className = 'test-section';
+        
+        const title = document.createElement('h2');
+        title.textContent = `Pattern: ${pattern} (${grouped[pattern].length} test${grouped[pattern].length > 1 ? 's' : ''})`;
+        section.appendChild(title);
+
+        grouped[pattern].forEach(test => {
+          const testCase = document.createElement('div');
+          testCase.className = `test-case ${test.passed ? 'passed' : 'failed'}`;
+          
+          const urlDiv = document.createElement('div');
+          urlDiv.className = 'test-url';
+          urlDiv.textContent = test.url;
+          testCase.appendChild(urlDiv);
+
+          const resultDiv = document.createElement('div');
+          resultDiv.className = `test-result ${test.passed ? 'success' : 'error'}`;
+          
+          if (test.error) {
+            resultDiv.textContent = `❌ Erreur: ${test.error}`;
+          } else if (test.passed) {
+            resultDiv.textContent = `✅ Page détectée: ${test.result.currentPage} (attendu: ${test.expectedPage})`;
+          } else {
+            const detected = test.result ? test.result.currentPage : 'non détecté';
+            resultDiv.textContent = `❌ Page détectée: ${detected} (attendu: ${test.expectedPage})`;
+          }
+          
+          testCase.appendChild(resultDiv);
+
+          if (test.result) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'test-info';
+            let info = `Pattern détecté: ${test.result.pattern}`;
+            if (test.nextPageUrl) {
+              info += ` | Page suivante: ${test.nextPageUrl}`;
+            }
+            if (test.prevPageUrl) {
+              info += ` | Page précédente: ${test.prevPageUrl}`;
+            }
+            infoDiv.textContent = info;
+            testCase.appendChild(infoDiv);
+          }
+
+          section.appendChild(testCase);
+        });
+
+        container.appendChild(section);
+      });
+    }
+
+    function updateStats() {
+      const total = testResults.length;
+      const passed = testResults.filter(t => t.passed).length;
+      const failed = total - passed;
+
+      document.getElementById('total').textContent = total;
+      document.getElementById('passed').textContent = passed;
+      document.getElementById('failed').textContent = failed;
+    }
+
+    function clearResults() {
+      document.getElementById('test-results').innerHTML = '';
+      document.getElementById('total').textContent = '0';
+      document.getElementById('passed').textContent = '0';
+      document.getElementById('failed').textContent = '0';
+      testResults = [];
+    }
+
+    function addCustomTest() {
+      const url = document.getElementById('test-url').value.trim();
+      const expectedPage = parseInt(document.getElementById('expected-page').value, 10);
+      const expectedPattern = document.getElementById('expected-pattern').value.trim() || undefined;
+
+      if (!url || !expectedPage || expectedPage < 1) {
+        alert('Veuillez remplir tous les champs requis (URL et page attendue)');
+        return;
+      }
+
+      customTests.push({ url, expectedPage, expectedPattern });
+      
+      // Réinitialiser le formulaire
+      document.getElementById('test-url').value = '';
+      document.getElementById('expected-page').value = '';
+      document.getElementById('expected-pattern').value = '';
+
+      alert(`Test ajouté! Total: ${customTests.length} test(s) personnalisé(s)`);
+    }
+
+    function testCustomUrl() {
+      const url = document.getElementById('test-url').value.trim();
+      
+      if (!url) {
+        alert('Veuillez entrer une URL');
+        return;
+      }
+
+      const result = detectPagination(url);
+      
+      let message = `Résultat pour: ${url}\n\n`;
+      if (result) {
+        message += `✅ Pagination détectée!\n`;
+        message += `Pattern: ${result.pattern}\n`;
+        message += `Page actuelle: ${result.currentPage}\n`;
+        if (result.buildUrl) {
+          message += `\nPage suivante: ${result.buildUrl(result.currentPage + 1)}\n`;
+          if (result.currentPage > 1) {
+            message += `Page précédente: ${result.buildUrl(result.currentPage - 1)}\n`;
+          }
+        }
+      } else {
+        message += `❌ Aucune pagination détectée`;
+      }
+      
+      alert(message);
+    }
+
+    // Exécuter les tests au chargement de la page
+    window.addEventListener('load', () => {
+      setTimeout(runAllTests, 500);
+    });
+  </script>
+</body>
+</html>
+
