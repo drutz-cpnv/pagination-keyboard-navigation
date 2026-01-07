@@ -263,20 +263,9 @@ function detectPagination(urlString) {
       }
     }
     
-    // Si aucun pattern ne correspond mais qu'on est sur une page qui pourrait être la page 1
-    // On retourne un objet avec currentPage = 1 pour permettre la navigation vers la page 2
-    return {
-      pattern: 'none',
-      currentPage: 1,
-      buildUrl: (page) => {
-        const newUrl = new URL(url);
-        // Par défaut, on ajoute ?p=page si page > 1
-        if (page > 1) {
-          newUrl.searchParams.set('p', page.toString());
-        }
-        return newUrl.toString();
-      }
-    };
+    // Si aucun pattern ne correspond, retourner null
+    // Les flèches ne fonctionneront que si l'URL contient un numéro de page
+    return null;
   } catch (e) {
     console.error('Page Extension: Erreur lors de la détection de pagination', e);
     return null;
