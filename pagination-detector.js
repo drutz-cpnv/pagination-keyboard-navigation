@@ -78,6 +78,33 @@ const PAGINATION_PATTERNS = [
       return newUrl.toString();
     }
   },
+
+  // Query "path-like" patterns dans la partie search (ex: ?12142342340-ddwqqwd-qwdqwd/page39)
+  // Ici, l'application encode toute la "route" après le ? dans la query string au lieu du pathname.
+  {
+    name: 'query-pathlike-page',
+    detect: (url) => {
+      // On ne peut pas utiliser searchParams car il n'y a pas de paires clé=valeur:
+      // Exemple: ?12142342340-ddwqqwd-qwdqwd/page39
+      // On cherche simplement un segment /page{num} dans la partie search brute.
+      return /\/page(\d+)/.test(url.search || '');
+    },
+    getPage: (url) => {
+      const match = (url.search || '').match(/\/page(\d+)/);
+      return match ? parseInt(match[1], 10) : null;
+    },
+    buildUrl: (url, page) => {
+      const newUrl = new URL(url);
+      const search = newUrl.search || '';
+
+      // Remplacer le numéro de page dans le segment /page{num}
+      // On conserve tout le préfixe avant /page et le reste éventuel après.
+      const newSearch = search.replace(/\/page(\d+)/, `/page${page}`);
+
+      newUrl.search = newSearch;
+      return newUrl.toString();
+    }
+  },
   
   // Path patterns: /page/2, /p/3, /page-2, /p-3
   {
